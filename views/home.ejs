@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head') %>
+<body class="d-flex flex-column min-vh-100">
+    <%- include('partials/navbar') %>
+    <%- include('partials/flash') %>
+
+    <main class="main-content flex-grow-1">
+        <section class="hero text-center py-5">
+            <div class="container">
+                <h1 class="display-3 fw-bold">Connect with the Best Experts</h1>
+                <p class="lead">Get personalized learning and achieve your academic goals.</p>
+                <a href="/tutors" class="btn btn-primary btn-lg rounded-pill px-5">Find a Tutor Now</a>
+            </div>
+        </section>
+
+        <section class="features py-5">
+            <div class="container">
+                <h2 class="text-center mb-5 text-white">Why Choose Arise?</h2>
+                <div class="row g-4">
+                    <div class="col-md-4 text-center">
+                        <div class="p-4 tutor-card h-100">
+                            <h3>Verified Experts</h3>
+                            <p>Learn from highly qualified and experienced professionals.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="p-4 tutor-card h-100">
+                            <h3>Real-time Chat</h3>
+                            <p>Direct communication for instant help and guidance.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="p-4 tutor-card h-100">
+                            <h3>Flexible Learning</h3>
+                            <p>Study at your own pace with a personalized schedule.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

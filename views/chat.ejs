@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head') %>
+<link rel="stylesheet" href="/css/chat.css">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<body class="d-flex flex-column min-vh-100">
+    <%- include('partials/navbar') %>
+    
+    <div class="main-wrapper">
+        <%- include('partials/flash') %>
+        
+        <div class="chat-app <%= receiver ? 'chat-active' : '' %>">
+            <!-- Sidebar (Contact List) -->
+            <div class="contacts-sidebar shadow-sm">
+                <div class="sidebar-header border-bottom">
+                    <h5 class="mb-0 fw-bold">Chats</h5>
+                    <div class="d-flex gap-3">
+                        <i class="bi bi-chat-left-text text-muted" style="cursor: pointer;"></i>
+                        <i class="bi bi-three-dots-vertical text-muted" style="cursor: pointer;"></i>
+                    </div>
+                </div>
+                
+                <div class="p-3 bg-white">
+                    <div class="input-group bg-light rounded-pill px-2">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control bg-transparent border-0 shadow-none py-1" placeholder="Search or start new chat">
+                    </div>
+                </div>
+
+                <div class="contacts-list">
+                    <% for (let contact of contacts) { %>
+                        <a href="/chat/<%= contact._id %>" class="contact-item <%= receiver && receiver._id.equals(contact._id) ? 'active' : '' %>">
+                            <div class="contact-avatar shadow-sm position-relative">
+                                <%= contact.username[0].toUpperCase() %>
+                                <span id="status-<%= contact._id %>" class="position-absolute bottom-0 end-0 p-2 border border-light rounded-circle <%= onlineUsers.has(contact._id.toString()) ? 'bg-success' : 'bg-secondary' %>"></span>
+                            </div>
+                            <div class="contact-info">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="contact-name"><%= contact.username %></div>
+                                    <div class="small text-muted">12:00 PM</div>
+                                </div>
+                                <div class="contact-last-msg"><%= contact.role %></div>
+                            </div>
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="chat-main shadow-sm">
+                <% if (receiver) { %>
+                    <div class="chat-main-header">
+                        <a href="/chat" class="back-button text-decoration-none d-md-none">
+                            <i class="bi bi-arrow-left fs-4"></i>
+                        </a>
+                        <div class="contact-avatar me-3" style="width: 40px; height: 40px;">
+                            <%= receiver.username[0].toUpperCase() %>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="contact-name mb-0 fs-6"><%= receiver.username %></div>
+                            <div id="header-status-text" class="small <%= onlineUsers.has(receiver._id.toString()) ? 'text-success' : 'text-muted' %>">
+                                <%= onlineUsers.has(receiver._id.toString()) ? 'online' : 'offline' %>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-4 text-muted fs-5">
+                            <i class="bi bi-search" style="cursor: pointer;"></i>
+                            <i class="bi bi-three-dots-vertical" style="cursor: pointer;"></i>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatBox">
+                        <% for (let msg of messages) { %>
+                            <div class="msg-bubble <%= msg.sender.equals(currentUser._id) ? 'msg-sent' : 'msg-received' %>">
+                                <div class="msg-content"><%= msg.message %></div>
+                                <div class="msg-time">
+                                    <%= new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+                                    <% if (msg.sender.equals(currentUser._id)) { %>
+                                        <i class="bi bi-check2-all text-primary ms-1"></i>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <form id="chatForm" class="chat-footer">
+                        <div class="d-flex gap-3 text-muted fs-4 ms-2">
+                            <i class="bi bi-emoji-smile" style="cursor: pointer;"></i>
+                            <i class="bi bi-plus-lg" style="cursor: pointer;"></i>
+                        </div>
+                        <input type="text" id="messageInput" class="chat-input" placeholder="Type a message" required autocomplete="off">
+                        <button class="send-btn pe-2">
+                            <i class="bi bi-send-fill text-primary"></i>
+                        </button>
+                    </form>
+                <% } else { %>
+                    <div class="empty-chat h-100">
+                        <div class="mb-4 d-flex justify-content-center align-items-center bg-light rounded-circle shadow-sm" style="width: 150px; height: 150px;">
+                            <i class="bi bi-chat-dots-fill text-muted" style="font-size: 5rem;"></i>
+                        </div>
+                        <h2 class="fw-light">Arise Web</h2>
+                        <p class="text-muted mx-auto" style="max-width: 400px;">
+                            Send and receive messages with verified experts and students. 
+                            Select a chat from the sidebar to start connecting.
+                        </p>
+                        <div class="mt-4 small text-muted">
+                            <i class="bi bi-lock-fill me-1"></i> End-to-end encrypted
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        if (chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        const chatInput = document.getElementById('messageInput');
+        if(chatInput) chatInput.focus();
+
+        <% if (currentUser) { %>
+            const socket = io();
+            const currentUserId = "<%= currentUser._id %>";
+
+            // 1. Join private room and announce online status
+            socket.on('connect', () => {
+                socket.emit('join', currentUserId);
+            });
+            
+            // --- Real-time Status Updates ---
+            socket.on('user_online', (userId) => {
+                updateStatus(userId, true);
+            });
+
+            socket.on('user_offline', (userId) => {
+                updateStatus(userId, false);
+            });
+
+            function updateStatus(userId, isOnline) {
+                const statusDot = document.getElementById(`status-${userId}`);
+                if (statusDot) {
+                    statusDot.classList.toggle('bg-success', isOnline);
+                    statusDot.classList.toggle('bg-secondary', !isOnline);
+                }
+                <% if (receiver) { %>
+                    if (userId === "<%= receiver._id %>") {
+                        const headerStatus = document.getElementById('header-status-text');
+                        headerStatus.textContent = isOnline ? 'online' : 'offline';
+                        headerStatus.classList.toggle('text-success', isOnline);
+                        headerStatus.classList.toggle('text-muted', !isOnline);
+                    }
+                <% } %>
+            }
+            
+            <% if (receiver) { %>
+                const receiverId = "<%= receiver._id %>";
+
+                // --- Real-time Messaging ---
+                const chatForm = document.getElementById('chatForm');
+                chatForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const message = chatInput.value.trim();
+                    if(message) {
+                        socket.emit('send_message', { senderId: currentUserId, receiverId, message });
+                        chatInput.value = '';
+                    }
+                });
+
+                socket.on('message_sent', (data) => {
+                    appendMessage(data.message, new Date(data.createdAt), 'sent');
+                });
+                
+                socket.on('receive_message', (data) => {
+                    if(data.senderId === receiverId) {
+                        appendMessage(data.message, new Date(data.createdAt), 'received');
+                    }
+                });
+
+                function appendMessage(message, createdAt, type) {
+                    const time = createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const bubbleClass = type === 'sent' ? 'msg-sent' : 'msg-received';
+                    const iconHtml = type === 'sent' ? '<i class="bi bi-check2-all text-primary ms-1"></i>' : '';
+
+                    const msgHtml = `
+                        <div class="msg-bubble ${bubbleClass}">
+                            <div class="msg-content">${message}</div>
+                            <div class="msg-time">
+                                ${time}
+                                ${iconHtml}
+                            </div>
+                        </div>
+                    `;
+                    chatBox.insertAdjacentHTML('beforeend', msgHtml);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            <% } %>
+        <% } %>
+    </script>
+</body>
+</html>
+

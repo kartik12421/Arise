@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head') %>
+<body>
+
+<%- include('partials/navbar') %>
+<%- include('partials/flash') %>
+
+<div class="auth-container">
+    <div class="container-custom">
+        <h2 class="text-center">Create Account</h2>
+
+        <div class="role-box">
+            <button type="button" id="candidateBtn" class="active">Student</button>
+            <button type="button" id="teacherBtn">Tutor</button>
+        </div>
+
+        <form action="/register" method="POST" enctype="multipart/form-data" id="registerForm">
+            <input type="hidden" name="role" id="roleInput" value="student">
+            
+            <div class="field">
+                <input type="text" name="username" required placeholder=" ">
+                <label>Username</label>
+            </div>
+
+            <div class="field">
+                <input type="email" name="email" required placeholder=" ">
+                <label>Email</label>
+            </div>
+
+            <div class="field">
+                <input type="password" name="password" required placeholder=" ">
+                <label>Password</label>
+            </div>
+
+            <!-- Student Fields -->
+            <div id="candidateFields">
+                <div class="field">
+                    <input type="text" name="courseInterested" placeholder=" ">
+                    <label>Course Interested</label>
+                </div>
+            </div>
+
+            <!-- Tutor Fields -->
+            <div id="teacherFields" class="hidden">
+                <div id="photoField">
+                    <label class="d-block mb-1 small text-muted">Upload Photo</label>
+                    <input type="file" name="image" accept="image/*" onchange="previewImage(event)" class="form-control mb-2">
+                    <img id="preview" class="preview hidden" style="width:70px;height:70px;border-radius:50%;object-fit:cover;display:block;margin:8px auto;">
+                </div>
+
+                <div class="field">
+                    <input type="text" name="subject" placeholder=" ">
+                    <label>Subjects</label>
+                </div>
+
+                <label class="small text-muted">Experience: <span id="expVal">0</span> yrs</label>
+                <input type="range" name="experience" class="form-range" min="0" max="30" value="0" oninput="expVal.innerText=this.value">
+
+                <label class="small text-muted mt-2 d-block">Skills (Press Enter)</label>
+                <div class="skill-box d-flex flex-wrap gap-1 p-2 border rounded mb-2" id="skillBox" style="min-height: 40px;">
+                    <input id="skillInput" placeholder="Add skill" style="border:none; outline:none; flex:1;">
+                </div>
+                <input type="hidden" name="skills" id="skillsHidden">
+                
+                <div class="field">
+                     <input type="text" name="phone" placeholder=" ">
+                     <label>Phone Number</label>
+                </div>
+                <div class="mb-3">
+                     <textarea name="description" class="form-control" placeholder="Short bio..." style="height: 80px;"></textarea>
+                </div>
+            </div>
+
+            <button class="submit-btn">Register</button>
+            <div class="text-center mt-3 small">
+                Already have an account? <a href="/login" class="fw-bold text-decoration-none text-dark">Login</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+    const candidateBtn = document.getElementById('candidateBtn');
+    const teacherBtn = document.getElementById('teacherBtn');
+    const candidateFields = document.getElementById('candidateFields');
+    const teacherFields = document.getElementById('teacherFields');
+    const roleInput = document.getElementById('roleInput');
+    const preview = document.getElementById('preview');
+
+    const candidateFieldsInputs = candidateFields.querySelectorAll('input');
+    const teacherFieldsInputs = teacherFields.querySelectorAll('input, textarea');
+
+    candidateBtn.onclick = () => {
+        candidateFields.classList.remove("hidden");
+        teacherFields.classList.add("hidden");
+        candidateBtn.classList.add("active");
+        teacherBtn.classList.remove("active");
+        roleInput.value = 'student';
+        
+        candidateFieldsInputs.forEach(i => i.required = true);
+        teacherFieldsInputs.forEach(i => i.required = false);
+    }
+
+    teacherBtn.onclick = () => {
+        teacherFields.classList.remove("hidden");
+        candidateFields.classList.add("hidden");
+        teacherBtn.classList.add("active");
+        candidateBtn.classList.remove("active");
+        roleInput.value = 'tutor';
+        
+        teacherFieldsInputs.forEach(i => {
+            if (i.name === 'subject') i.required = true;
+        });
+        candidateFieldsInputs.forEach(i => i.required = false);
+    }
+
+    function previewImage(e){
+        const file = e.target.files[0];
+        if(file){
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove("hidden");
+        }
+    }
+
+    const skillInput = document.getElementById('skillInput');
+    const skillBox = document.getElementById('skillBox');
+    const skillsHidden = document.getElementById('skillsHidden');
+    let skills = [];
+
+    skillInput.addEventListener("keydown", (e) => {
+        if(e.key === "Enter" && skillInput.value.trim() !== ""){
+            e.preventDefault();
+            const skill = skillInput.value.trim();
+            skills.push(skill);
+            renderSkills();
+            skillInput.value = "";
+        }
+    });
+
+    function renderSkills() {
+        const tags = skillBox.querySelectorAll('.tag-item');
+        tags.forEach(t => t.remove());
+
+        skills.forEach((skill, index) => {
+            const tag = document.createElement("span");
+            tag.className = "tag-item badge bg-primary d-flex align-items-center";
+            tag.innerHTML = `${skill} <span onclick="removeSkill(${index})" style="margin-left:5px;cursor:pointer;">&times;</span>`;
+            skillBox.insertBefore(tag, skillInput);
+        });
+        skillsHidden.value = JSON.stringify(skills);
+    }
+    
+    window.removeSkill = function(index) {
+        skills.splice(index, 1);
+        renderSkills();
+    };
+</script>
+</body>
+</html>

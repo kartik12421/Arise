@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head') %>
+
+<style>
+.tutor-card{
+    background:white;
+    border-radius:12px;
+    padding:20px;
+    transition: all 0.3s ease;
+    cursor:pointer;
+}
+
+.tutor-card:hover{
+    transform: translateY(-10px) scale(1.03);
+    box-shadow:0 15px 35px rgba(0,0,0,0.2);
+}
+
+.tutor-img{
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    border:4px solid white;
+    margin-top:-60px;
+    transition: transform 0.3s ease;
+}
+
+.tutor-card:hover .tutor-img{
+    transform: scale(1.1);
+}
+</style>
+
+<body class="d-flex flex-column min-vh-100">
+
+<%- include('partials/navbar') %>
+<%- include('partials/flash') %>
+
+<div class="container py-5 flex-grow-1" style="margin-top: 80px;">
+
+<h2 class="text-center mb-5 fw-bold text-white">Our Experts</h2>
+
+<div class="row g-4">
+
+<% if (tutors.length) { %>
+
+<% for (let tutor of tutors) { %>
+
+<div class="col-md-4 col-lg-3">
+
+<div class="tutor-card text-center shadow-sm h-100">
+
+<div class="bg-primary rounded-top mb-3" style="height:60px; margin:-20px -20px 20px -20px;"></div>
+
+<img src="<%= tutor.image || 'https://via.placeholder.com/150' %>" class="tutor-img shadow-sm" style="object-fit: cover;">
+
+<h5 class="fw-bold mb-1">
+<%= tutor.name || (tutor.user ? tutor.user.username : 'Tutor') %>
+</h5>
+
+<div class="text-primary fw-bold mb-1">
+<%= tutor.subject %>
+</div>
+
+<div class="mb-2">
+<span class="badge bg-secondary">
+<%= tutor.experience %> Yrs Exp
+</span>
+</div>
+
+<div class="text-warning mb-2">
+<% for(let i=0; i < (tutor.rating || 5); i++) { %>★<% } %>
+<% for(let i=(tutor.rating || 5); i < 5; i++) { %>☆<% } %>
+</div>
+
+<p class="small text-muted mb-3" style="min-height:40px;">
+<%= tutor.description ? tutor.description.substring(0,60) + '...' : 'Expert in ' + tutor.subject %>
+</p>
+
+<div class="mb-3">
+<% if(tutor.skills && tutor.skills.length > 0) { %>
+
+<% tutor.skills.slice(0,3).forEach(skill => { %>
+
+<span class="badge bg-light text-dark border">
+<%= skill %>
+</span>
+
+<% }) %>
+
+<% } %>
+</div>
+
+<div class="d-flex justify-content-center gap-2 mt-auto">
+
+<a href="/chat/<%= tutor.user ? tutor.user._id : '#' %>" 
+class="btn btn-success btn-sm rounded-pill px-3">
+💬 Chat
+</a>
+
+<a href="tel:<%= tutor.phone || '' %>" 
+class="btn btn-outline-primary btn-sm rounded-pill px-3">
+📞 Call
+</a>
+
+</div>
+
+</div>
+</div>
+
+<% } %>
+
+<% } else { %>
+
+<div class="text-center mt-5 w-100">
+<p class="lead">No tutors found yet. Be the first to join!</p>
+
+<a href="/register" class="btn btn-primary">
+Register as Tutor
+</a>
+</div>
+
+<% } %>
+
+</div>
+</div>
+
+<%- include('partials/footer') %>
+
+</body>
+</html>

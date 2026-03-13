@@ -1,0 +1,30 @@
+<header>
+<nav>
+<div class="logo"><a href ="/">Arise</a></div>
+<div class="menu-toggle" onclick="toggleMenu()">☰</div>
+<ul id="menu">
+<li><a href="/">Home</a></li>
+<li><a href="/tutors">Experts</a></li>
+<li><a href="/about">About</a></li>
+<% if (currentUser) { %>
+    <li><a href="/chat">Chat</a></li>
+    <li><a href="#">Live</a></li>
+<% } %>
+</ul>
+<div class="login">
+    <% if (currentUser) { %>
+        <span class="me-2 text-dark d-none d-md-inline" style="font-weight: 500;">Hi, <%= currentUser.username %></span>
+        <a href="/logout">Logout</a>
+    <% } else { %>
+        <a href="/register" style="background: transparent; color: #1F2A44 !important; border: 1px solid #1F2A44; margin-right: 5px;">Register</a>
+        <a href="/login">Login</a>
+    <% } %>
+</div>
+</nav>
+</header>
+
+<script>
+function toggleMenu(){
+ document.getElementById("menu").classList.toggle("show");
+}
+</script>

@@ -1,0 +1,39 @@
+<style>
+.footer{
+    
+    color:#fff;
+    padding:10px 0;
+    text-align:center;
+    font-family:'Poppins',sans-serif;
+    font-size:14px;
+   
+}
+
+.footer p{
+    margin:0;
+}
+
+#datetime{
+    margin-left:8px;
+    opacity:0.9;
+}
+</style>
+
+<footer class="footer text-center">
+    <p>© 2026 <strong>Arise</strong>. All Rights Reserved | <span id="datetime"></span></p>
+</footer>
+
+<script>
+function updateDateTime() {
+    const now = new Date();
+    const options = { weekday:'short', year:'numeric', month:'short', day:'numeric' };
+    const date = now.toLocaleDateString("en-US", options);
+    const time = now.toLocaleTimeString();
+
+    document.getElementById("datetime").innerHTML =
+        "📅 " + date + " | ⏰ " + time;
+}
+
+updateDateTime();
+setInterval(updateDateTime,1000);
+</script>
