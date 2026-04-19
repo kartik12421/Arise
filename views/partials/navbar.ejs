@@ -9,6 +9,9 @@
 <% if (currentUser) { %>
     <li><a href="/chat">Chat</a></li>
     <li><a href="#">Live</a></li>
+    <% if (currentUser.isAdmin) { %>
+        <li><a href="/admin/dashboard" style="color: #ffdd57 !important;">Admin Panel</a></li>
+    <% } %>
 <% } %>
 </ul>
 <div class="login">
@@ -23,8 +26,20 @@
 </nav>
 </header>
 
+<script src="/socket.io/socket.io.js"></script>
 <script>
 function toggleMenu(){
  document.getElementById("menu").classList.toggle("show");
 }
+
+<% if (currentUser && currentUser.isAdmin) { %>
+    const adminSocket = io();
+    adminSocket.on('new_user_registration', (data) => {
+        alert(`🔔 New Approval Required!\nUser: ${data.username}\nRole: ${data.role}`);
+        // Optionally refresh if on dashboard
+        if(window.location.pathname === '/admin/dashboard') {
+            window.location.reload();
+        }
+    });
+<% } %>
 </script>

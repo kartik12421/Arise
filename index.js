@@ -126,9 +126,11 @@ io.on('connection', (socket) => {
 const authRoutes = require('./routes/auth');
 const tutorRoutes = require('./routes/tutor');
 const chatRoutes = require('./routes/chat');
+const adminRoutes = require('./routes/admin');
 
-// Make onlineUsers available to routes
+// Make io available to routes
 app.use((req, res, next) => {
+    req.io = io;
     req.onlineUsers = onlineUsers;
     next();
 });
@@ -136,6 +138,7 @@ app.use((req, res, next) => {
 app.use('/', authRoutes);
 app.use('/tutors', tutorRoutes);
 app.use('/chat', chatRoutes);
+app.use('/admin', adminRoutes);
 
 // Routes will be added here
 app.get('/', (req, res) => {

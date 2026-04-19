@@ -29,6 +29,12 @@ router.post('/register', upload.single('image'), validateRegistration, async (re
         const user = new User({ email, username, role });
         const registeredUser = await User.register(user, password);
 
+        // Notify Admin via Socket.io
+        req.io.emit('new_user_registration', { 
+            username: registeredUser.username, 
+            role: registeredUser.role 
+        });
+
         if (role === 'student') {
             const student = new Student({
                 user: registeredUser._id,

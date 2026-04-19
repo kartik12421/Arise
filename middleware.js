@@ -1,6 +1,21 @@
 const { userSchema, studentSchema, tutorSchema } = require('./schemas');
 const ExpressError = require('./utils/ExpressError');
 
+module.exports.isApproved = (req, res, next) => {
+    // If user is not logged in, it's fine (passport will catch this elsewhere)
+    if (!req.user || req.user.isAdmin) {
+        return next();
+    }
+    
+    // If not approved, redirect to home with flash
+    if (!req.user.isApproved) {
+        req.flash('error', 'Account pending admin approval.');
+        return res.redirect('/');
+    }
+    
+    next();
+}
+
 module.exports.validateRegistration = (req, res, next) => {
     // Basic user validation (allow other fields)
     const { error: userError } = userSchema.validate(req.body, { allowUnknown: true });

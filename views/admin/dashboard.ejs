@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('../partials/head') %>
+<body class="d-flex flex-column min-vh-100">
+    <%- include('../partials/navbar') %>
+    <%- include('../partials/flash') %>
+
+    <div class="container py-5 mt-5">
+        <h2 class="text-white mb-4">Admin Approval Dashboard</h2>
+        
+        <div class="row">
+            <% if (pendingUsers.length > 0) { %>
+                <% for (let user of pendingUsers) { %>
+                    <div class="col-md-4 mb-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title text-dark"><%= user.username %></h5>
+                                <p class="card-text text-muted">
+                                    <strong>Email:</strong> <%= user.email %><br>
+                                    <strong>Role:</strong> <%= user.role %>
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <form action="/admin/approve/<%= user._id %>" method="POST">
+                                        <button class="btn btn-success btn-sm">Approve</button>
+                                    </form>
+                                    <form action="/admin/reject/<%= user._id %>" method="POST">
+                                        <button class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            <% } else { %>
+                <div class="col-12 text-center text-white py-5">
+                    <h4>No pending approvals at the moment.</h4>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+</body>
+</html>

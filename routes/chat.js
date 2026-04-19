@@ -3,6 +3,8 @@ const router = express.Router();
 const Chat = require('../models/Chat');
 const User = require('../models/User');
 
+const { isApproved } = require('../middleware');
+
 const isLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated()) {
         req.flash('error', 'You must be signed in!');
@@ -11,7 +13,7 @@ const isLoggedIn = (req, res, next) => {
     next();
 };
 
-router.get('/:id', isLoggedIn, async (req, res) => {
+router.get('/:id', isLoggedIn, isApproved, async (req, res) => {
     try {
         const receiverId = req.params.id;
         
@@ -47,7 +49,7 @@ router.get('/:id', isLoggedIn, async (req, res) => {
         // Always include the current receiver (the person we are currently chatting with)
         userIds.add(receiverId);
 
-        const contacts = await User.find({ _id: { $in: Array.from(userIds) } });
+        const contacts = await User.find({ _id: { $in: Array.from(userIds) }, isAdmin: false });
         res.render('chat', { messages, receiver, contacts, onlineUsers: req.onlineUsers });
     } catch (e) {
         console.error(e);
@@ -56,7 +58,7 @@ router.get('/:id', isLoggedIn, async (req, res) => {
     }
 });
 
-router.get('/', isLoggedIn, async (req, res) => {
+router.get('/', isLoggedIn, isApproved, async (req, res) => {
     try {
         const chatUsers = await Chat.find({
             $or: [{ sender: req.user._id }, { receiver: req.user._id }]
@@ -68,7 +70,7 @@ router.get('/', isLoggedIn, async (req, res) => {
             if (chat.receiver.toString() !== req.user._id.toString()) userIds.add(chat.receiver.toString());
         });
 
-        const contacts = await User.find({ _id: { $in: Array.from(userIds) } });
+        const contacts = await User.find({ _id: { $in: Array.from(userIds) }, isAdmin: false });
         res.render('chat', { messages: [], receiver: null, contacts, onlineUsers: req.onlineUsers });
     } catch (e) {
         console.error(e);

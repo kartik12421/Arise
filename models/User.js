@@ -12,6 +12,14 @@ const userSchema = new Schema({
         type: String,
         enum: ['student', 'tutor'],
         default: 'student'
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
+    isApproved: {
+        type: Boolean,
+        default: false
     }
 });
 
